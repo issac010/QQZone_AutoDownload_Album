@@ -15,8 +15,8 @@ Python+selenium 自动下载QQ空间相册
     
 ### 配置环境：  
 1、火狐浏览器下载：http://www.firefox.com.cn/，下载后安装，例如装在D:\Firefox  
-2、驱动下载：https://github.com/mozilla/geckodriver/releases/，解压后放到火狐安装目录D:\Firefox  
-3、右击‘’我的电脑‘’，属性，高级设置，环境变量，在系统环境变量的‘path’下添加火狐安装目录D:\Firefox。（可参考https://jingyan.baidu.com/article/48206aeaafb15c216ad6b3ec.html）  
+2、驱动下载：https://github.com/mozilla/geckodriver/releases/，解压后放到火狐安装目录D:\Firefox，为保险起见，也复制一份到Python.exe所在目录。  
+3、右击‘’我的电脑‘’，属性，高级设置，环境变量，在系统环境变量的‘path’下添加火狐安装目录D:\Firefox，和python.exe所在目录。（可参考https://jingyan.baidu.com/article/48206aeaafb15c216ad6b3ec.html）  
 4、设置完后运行程序就行。  
   
 ### 备注  
