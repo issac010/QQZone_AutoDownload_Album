@@ -73,18 +73,27 @@ print('程序运行要求：\r\n  '
       '7、进入相册前，请不要在浏览器界面移动鼠标，以免干扰程序判断\r\n\r\n'
       )
 
+ping = os.popen("ping baidu.com -n 1").readlines()
+if "丢失 = 0" in ping[5]:
+    print("网络可用")
+else:
+    print("网络不可用 - ", ping[5])
+    os._exit(0)
+
 user = input('输入账号: \r\n  ')
 word = input('输入密码: \r\n  ')
 oth_user = input('输入对方账号(空表示下载自己): \r\n  ')
-print('*'*60,'\r\n\t\t    即将开始!')
+print('*'*60, '\r\n\t\t    即将开始!')
 print('*'*60)
 # while True:
 geturl = r'https://qzone.qq.com/'
 geturl_other = r'https://user.qzone.qq.com/' + oth_user
-driver = webdriver.Firefox()
+profile = webdriver.FirefoxProfile(r"C:\Users\SXF\AppData\Roaming\Mozilla\Firefox\Profiles\vfmgf94f.dev-edition-default")
+driver = webdriver.Firefox(profile)   # 读入浏览器配置，以屏蔽浏览器通知
+# driver = webdriver.Chrome()
 # driver = webdriver.PhantomJS()
 driver.maximize_window()
-driver.implicitly_wait(10)  # 隐性等待
+driver.implicitly_wait(60)  # 隐性等待
 driver.get(geturl)
 
 print('切换到登录表单')
@@ -99,14 +108,14 @@ login_button = driver.find_element_by_id('login_button')  # 查找登陆按键
 
 print('输入账号中...')
 username.clear()
-time.sleep(2)
+time.sleep(1)
 username.send_keys(user)  # 输入账号
 print('输入密码中...')
 password.clear()
-time.sleep(5)
+time.sleep(1)
 password.send_keys(word)  # 输入密码
 print('登陆中...')
-time.sleep(5)
+time.sleep(1)
 login_button.click()
 print('**此处若有滑块验证，请在10s内手动完成！！！**')
 time.sleep(10)
@@ -125,6 +134,7 @@ while True:
         break
 
 driver.switch_to.default_content()  # 返回
+
 
 if oth_user:
     print('进入', oth_user)
