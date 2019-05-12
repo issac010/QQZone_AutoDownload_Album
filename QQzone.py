@@ -9,6 +9,8 @@ from selenium import webdriver
 import urllib.request
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from PIL import Image
+from io import BytesIO
 
 global driver  # 在使用前初次声明
 
@@ -23,6 +25,7 @@ def scroll2bottom():
 
 
 img_name = 0
+import imghdr
 def picdownload():
     global img_name
     global driver  # 再次声明，表示在这里使用的是全局变量
@@ -64,6 +67,9 @@ def picdownload():
         f = open(str(img_name) + '.jpg', 'wb')  # 写入多媒体文件必须要 b 这个参数！
         f.write(img_html.content)  # 多媒体文件要是用conctent！
         f.close()
+        if imghdr.what(str(img_name) + '.jpg') == 'webp':
+          print("* webp格式图片 *")
+          os.rename(str(img_name)+'.jpg', str(img_name)+'.webp')
         # time.sleep(0.2)
     print('当前页下载完成!')
     os.chdir(path)
@@ -79,7 +85,7 @@ def main_enter():
     # while True:
     geturl = r'https://qzone.qq.com/'
     geturl_other = r'https://user.qzone.qq.com/' + oth_user
-    profile = webdriver.FirefoxProfile(r"selenium_firefox")
+    profile = webdriver.FirefoxProfile(r"C:\Users\SXF\Desktop\Python\selenium_firefox")
     driver = webdriver.Firefox(profile)   # 读入浏览器配置，以屏蔽浏览器通知
     # driver = webdriver.PhantomJS()
     driver.maximize_window()
