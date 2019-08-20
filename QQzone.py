@@ -25,9 +25,10 @@ def scroll2bottom():
 
 
 img_name = 0
+total_img = 0
 import imghdr
 def picdownload():
-    global img_name
+    global img_name, total_img
     global driver  # 再次声明，表示在这里使用的是全局变量
     Soup = BeautifulSoup(driver.page_source, 'lxml')
     img = Soup.find_all('img', class_='j-pl-photoitem-img')
@@ -46,7 +47,7 @@ def picdownload():
     os.chdir(path_dir)  # 切换路径
 
     print('*' * 60, '\r\n开始下载图片')
-    total_img = len(img)
+    total_img += len(img)
     for img_url in img:  # 下载图片
         try:
             img_ori = img_url['src']
@@ -89,7 +90,7 @@ def main_enter():
     driver = webdriver.Firefox(profile)   # 读入浏览器配置，以屏蔽浏览器通知
     # driver = webdriver.PhantomJS()
     driver.maximize_window()
-    driver.implicitly_wait(60)  # 隐性等待
+    driver.implicitly_wait(30)  # 隐性等待
     driver.get(geturl)
 
     print('切换到登录表单')
@@ -150,7 +151,10 @@ def main_enter():
 
 
 def main_album():
-    global driver  # 再次声明，表示在这里使用的是全局变量
+    global driver, total_img  # 再次声明，表示在这里使用的是全局变量
+    total_img = 0
+    driver.find_element_by_class_name('logo').click()
+    time.sleep(2)
     try:
         print("执行js调出'我的主页'界面")
         js = r'document.getElementById("tb_menu_panel").style.display="block"'
@@ -165,6 +169,7 @@ def main_album():
         print("执行js退出'我的主页'界面")
         js = r'document.getElementById("tb_menu_panel").style.display="none"'
         driver.execute_script(js)
+        time.sleep(2)
         # try:
         #     menu_item = driver.find_element_by_id('QM_Profile_Photo_A')
         # except:
@@ -172,12 +177,14 @@ def main_album():
         # print('进入相册列表中...')
         # menu_item.click()  # 进入相册列表
         # time.sleep(6)
-        try:
+
+        print('检测广告中...')
+        if '.op-icon.icon-close' in driver.page_source:
             guanggao = driver.find_element_by_css_selector('.op-icon.icon-close')
             print('检测到弹窗广告，自动关闭！')
             guanggao.click()
-        except:
-            pass
+        else:
+            print('无广告')
         driver.switch_to.frame('tphoto')
         print('switch to tphoto frame')
         print('**此页面如果有未处理广告，且干扰程序运行，请手动关闭！！！**')
@@ -202,8 +209,9 @@ def main_album():
             print('进入相册中...', album_list.get_attribute('title'))
             album_list.click()
             time.sleep(5)
-            try:
-                driver.find_element_by_class_name('pic-num-wrap')
+
+            #driver.find_element_by_class_name('pic-num-wrap')
+            if 'pic-num-wrap' in driver.page_source:
                 print('进入相册失败,将重试!')
                 # album = driver.find_elements_by_css_selector('.item-wrap.bor-tx')[0]
                 # album.click()
@@ -216,7 +224,7 @@ def main_album():
                 driver.switch_to.frame('tphoto')
                 time.sleep(2)
                 continue
-            except:
+            else:
                 print('进入成功!')
                 break
     except Exception as e:
@@ -275,6 +283,7 @@ if __name__ == '__main__':
         print("网络可用")
     else:
         print("网络不可用 - ", ping[5])
+        input("任意键退出")
         os._exit(0)
 
     main_enter()
