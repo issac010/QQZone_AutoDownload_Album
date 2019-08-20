@@ -47,7 +47,7 @@ def picdownload():
     os.chdir(path_dir)  # 切换路径
 
     print('*' * 60, '\r\n开始下载图片')
-    total_img += len(img)
+    # total_img += len(img)
     for img_url in img:  # 下载图片
         try:
             img_ori = img_url['src']
@@ -153,6 +153,8 @@ def main_enter():
 def main_album():
     global driver, total_img  # 再次声明，表示在这里使用的是全局变量
     total_img = 0
+    driver.refresh()
+    time.sleep(2)
     driver.find_element_by_class_name('logo').click()
     time.sleep(2)
     try:
@@ -204,6 +206,13 @@ def main_album():
             album_list_cnt = album_list_cnt + 1
             print("[", album_list_cnt, "] ", i.text)
         which_album = int(input("输入数字(如:1) ").strip()) - 1
+
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'lxml')
+        total_img = int(soup.find_all(class_='pic-num')[which_album].string)
+        #total_img = int(driver.find_elements_by_class_name('pic-num')[which_album])  # 'pic-num'  'j-pl-albuminfo-total'
+
+        print("本相册共有[%s]张照片" % total_img)
         while True:
             album_list = driver.find_elements_by_css_selector('.c-tx2.js-album-desc-a')[which_album]
             print('进入相册中...', album_list.get_attribute('title'))
@@ -235,16 +244,15 @@ def main_album():
     while counter > 0:
         scroll2bottom()
         counter = counter - 1
-    try:
-        try:
-            page_num = driver.find_element_by_id('pager_last_1').get_attribute('innerHTML')
-            # print('page_num: ',page_num)
-        except:
-            page_num = driver.find_elements_by_css_selector('.js-pagenormal')[-1].get_attribute('title')
-            pass
-    except:
+    print('扫描完成')
+
+    if 'pager_last_1' in driver.page_source:
+        page_num = driver.find_element_by_id('pager_last_1').get_attribute('innerHTML')
+    elif 'js-pagenormal' in driver.page_source:
+        page_num = driver.find_elements_by_css_selector('.js-pagenormal')[-1].get_attribute('title')
+    else:
         page_num = 1
-        pass
+
     page_current = 1
     print('**第{}/{}页**'.format(page_current, page_num))
     picdownload()
@@ -259,7 +267,10 @@ def main_album():
         while counter > 0:
             scroll2bottom()
             counter = counter - 1
-        picdownload()
+        try:
+            picdownload()
+        except Exception as e:
+            print(e)
 
 
 
@@ -289,6 +300,7 @@ if __name__ == '__main__':
     main_enter()
     main_album()
     while(input("是否继续？(Y/N): ").strip().lower() == 'y'):
+        print('\r\n\r\n')
         main_album()
     print('感谢使用，下次见!')
     driver.close()
