@@ -13,6 +13,16 @@ from PIL import Image
 from io import BytesIO
 
 global driver  # 在使用前初次声明
+global oth_user
+
+
+def webpTojpg(path):
+    f = Image.open(path)
+    f.save(path.rsplit('.')[0]+'.jpg', 'JPEG')
+    os.remove(path)
+    # res = os.popen("dwebp %s -o %s"%(path, path.rsplit('.')[0]+'.png')).readlines()
+    print("* jpg转换完成 *")
+
 
 def scroll2bottom():
     global driver  # 再次声明，表示在这里使用的是全局变量
@@ -69,24 +79,25 @@ def picdownload():
         f.write(img_html.content)  # 多媒体文件要是用conctent！
         f.close()
         if imghdr.what(str(img_name) + '.jpg') == 'webp':
-          print("* webp格式图片 *")
-          os.rename(str(img_name)+'.jpg', str(img_name)+'.webp')
-        # time.sleep(0.2)
+            print("* webp格式图片 *")
+            os.rename(str(img_name)+'.jpg', str(img_name)+'.webp')
+            webpTojpg(str(img_name)+'.webp')
+        # time.sleep(0.1)
     print('当前页下载完成!')
     os.chdir(path)
 
 
 def main_enter():
-    global driver  # 再次声明，表示在这里使用的是全局变量
-    user = input('输入账号: \r\n  ')
-    word = input('输入密码: \r\n  ')
-    oth_user = input('输入对方账号(空表示下载自己): \r\n  ')
+    global driver, oth_user  # 再次声明，表示在这里使用的是全局变量
+    user = input('输入账号: \r\n  ').strip()
+    word = input('输入密码: \r\n  ').strip()
+    oth_user = input('输入对方账号(空表示下载自己): \r\n  ').strip()
     print('*'*60, '\r\n\t\t    即将开始!')
     print('*'*60)
     # while True:
     geturl = r'https://qzone.qq.com/'
     geturl_other = r'https://user.qzone.qq.com/' + oth_user
-    profile = webdriver.FirefoxProfile(r"C:\Users\SXF\Desktop\Python\selenium_firefox")
+    profile = webdriver.FirefoxProfile(os.path.join(os.getcwd(), 'selenium_firefox'))
     driver = webdriver.Firefox(profile)   # 读入浏览器配置，以屏蔽浏览器通知
     # driver = webdriver.PhantomJS()
     driver.maximize_window()
@@ -133,29 +144,27 @@ def main_enter():
     driver.switch_to.default_content()  # 返回
 
     if oth_user:
+        time.sleep(5)
         print('进入', oth_user)
         driver.get(geturl_other)
         print('等待稳定...')
-        try:
-            background = driver.find_element_by_css_selector('.mode_lace.mode_bg_opacity100')
-            background.click()
-            time.sleep(4)
-        except:
-            pass
-        try:
-            button = driver.find_element_by_class_name('btn-fs-sure')
-            button.click()
-        except:
-            pass
+        time.sleep(5)
+        if 'btn-fs-sure' in driver.page_source:
+            friendship = driver.find_element_by_class_name('btn-fs-sure')
+            friendship.click()
+            time.sleep(1)
+        print("稳定结束")
         # driver.refresh()
 
 
 def main_album():
-    global driver, total_img  # 再次声明，表示在这里使用的是全局变量
+    global driver, img_name, total_img, oth_user  # 再次声明，表示在这里使用的是全局变量
     total_img = 0
+    img_name = 0
     driver.refresh()
     time.sleep(2)
-    driver.find_element_by_class_name('logo').click()
+    driver.find_element_by_class_name('icon-homepage').click()
+    # driver.find_element_by_class_name('logo').click()
     time.sleep(2)
     try:
         print("执行js调出'我的主页'界面")
@@ -220,22 +229,41 @@ def main_album():
             time.sleep(5)
 
             #driver.find_element_by_class_name('pic-num-wrap')
-            if 'pic-num-wrap' in driver.page_source:
-                print('进入相册失败,将重试!')
-                # album = driver.find_elements_by_css_selector('.item-wrap.bor-tx')[0]
-                # album.click()
-                # 滚动
-                driver.switch_to.default_content()
-                length = length + 100
-                js = "var q=document.documentElement.scrollTop="+str(500+length)
-                driver.execute_script(js)
-                time.sleep(3)
-                driver.switch_to.frame('tphoto')
-                time.sleep(2)
-                continue
+
+            if oth_user:
+                if '转载' not in driver.page_source:
+                    print('进入相册失败,将重试!')
+                    # album = driver.find_elements_by_css_selector('.item-wrap.bor-tx')[0]
+                    # album.click()
+                    # 滚动
+                    driver.switch_to.default_content()
+                    length = length + 100
+                    js = "var q=document.documentElement.scrollTop=" + str(500 + length)
+                    driver.execute_script(js)
+                    time.sleep(3)
+                    driver.switch_to.frame('tphoto')
+                    time.sleep(2)
+                    continue
+                else:
+                    print('进入成功!')
+                    break
             else:
-                print('进入成功!')
-                break
+                if 'pic-num-wrap' in driver.page_source:
+                    print('进入相册失败,将重试!')
+                    # album = driver.find_elements_by_css_selector('.item-wrap.bor-tx')[0]
+                    # album.click()
+                    # 滚动
+                    driver.switch_to.default_content()
+                    length = length + 100
+                    js = "var q=document.documentElement.scrollTop="+str(500+length)
+                    driver.execute_script(js)
+                    time.sleep(3)
+                    driver.switch_to.frame('tphoto')
+                    time.sleep(2)
+                    continue
+                else:
+                    print('进入成功!')
+                    break
     except Exception as e:
         print(e)
 
@@ -274,6 +302,7 @@ def main_album():
 
 
 
+
 #******************************程序从此处开始******************************#
 
 
@@ -287,15 +316,16 @@ if __name__ == '__main__':
           '5、按提示输入信息，随后自动运行，若出错请多试几次。\r\n  '
           '6、程序有时运行缓慢，请耐心等待！\r\n  '
           '7、进入相册前，请不要在浏览器界面移动鼠标，以免干扰程序判断\r\n\r\n'
+          'Github: https://github.com/1061700625/QQZone_AutoDownload_Album\r\n\r\n'
           )
 
-    ping = os.popen("ping baidu.com -n 1").readlines()
-    if "丢失 = 0" in ping[5]:
-        print("网络可用")
-    else:
-        print("网络不可用 - ", ping[5])
-        input("任意键退出")
-        os._exit(0)
+    # ping = os.popen("ping baidu.com -n 1").readlines()
+    # if "丢失 = 0" in ping[5]:
+    #     print("网络可用")
+    # else:
+    #     print("网络不可用 - ", ping[5])
+    #     input("任意键退出")
+    #     os._exit(0)
 
     main_enter()
     main_album()
