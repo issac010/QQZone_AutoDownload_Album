@@ -1,11 +1,13 @@
 # QQZone_AutoDownload_Album  
 Python+selenium 自动下载QQ空间相册  
 .  
-selenium_firefox.zip 需要解压后放在同路径下  
+ **selenium_firefox.zip** 需要解压后放在同路径下  
 .  
 貌似腾讯的登陆加密做的很复杂。所以用selenium模拟登陆的，这样就可以绕过复杂的登陆验证了，等登陆进去后，就可以随便浪啦，解析网页啥的跟普通差不多。  
 【可下载他人空间相册】  
 【更改为通用方法，导航栏无需更改为默认设置】  
+【webp转jpg】
+
 ### 程序运行要求：  
 1、下载火狐浏览器。  
 2、下载火狐驱动 geckodriver.exe  
